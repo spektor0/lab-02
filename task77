@@ -1,0 +1,61 @@
+import urllib.request
+import re
+
+class MyFile:
+    def __init__(self, name, mode):
+        self.name = name
+        self.mode = mode
+    
+    def read(self):
+        with open(self.name, 'r', encoding='utf-8') as f:
+            return f.read()
+    
+    def write(self, text):    
+        file_mode = 'w' if self.mode == "write" else 'a'
+        with open(self.name, file_mode, encoding='utf-8') as f:
+            f.write(text)
+    
+    def append(self, text):    
+        with open(self.name, 'a', encoding='utf-8') as f:
+            f.write("\n" + text)
+    
+    def read_url(self):
+        response = urllib.request.urlopen(self.name)
+        return response.read().decode('utf-8')
+    
+    def count_urls(self):      
+        html = self.read_url()
+        links = re.findall(r'href="([^"]*)"', html)
+        return len(links)
+    
+    def write_url(self, filename):
+        html = self.read_url()
+        with open(filename, 'w', encoding='utf-8') as f:
+            f.write(html)
+
+#Запись в файл
+file = MyFile("text.txt", "write")
+file.write("привет!")
+
+#Чтение файла
+file = MyFile("text.txt", "read")
+print(file.read())
+
+#Добавление в файл
+file = MyFile("text.txt", "append")
+file.append("привет!")
+
+#Чтение файла
+file = MyFile("text.txt", "read")
+print(file.read())
+
+#Чтение URL
+file = MyFile("https://raw.githubusercontent.com/dm-fedorov/python_basic/master/data/opendata.stat", "url")
+content = file.read_url()
+print(content[:200])
+
+#Подсчет ссылок
+print(file.count_urls())
+
+#Сохранение URL в файл
+file.write_url("text_url.txt")
