@@ -1,0 +1,46 @@
+import csv
+import urllib.request
+import matplotlib.pyplot as plt
+from datetime import datetime
+dates = []
+pensions = []
+
+try:
+    response = urllib.request.urlopen('https://raw.githubusercontent.com/dm-fedorov/python_basic/master/data/opendata.stat')
+    lines = [line.decode('utf-8') for line in response.readlines()]
+    reader = csv.reader(lines)
+    next(reader)
+    
+    for row in reader:
+        if len(row) >= 4:
+            name, region, date_str, value = row
+            if ('Средняя пенсия' in name and 
+                'Забайкальский край' in region and 
+                '2018' in date_str):
+                
+                dates.append(datetime.strptime(date_str, '%Y-%m-%d'))
+                pensions.append(float(value))
+    
+    if not pensions:
+        print("Нет данных")
+    else:
+        # Среднее
+        avg = sum(pensions) / len(pensions)
+        print(f"Средняя пенсия: {avg:.0f} руб.")
+        
+        # График
+        dates, pensions = zip(*sorted(zip(dates, pensions)))
+        
+        plt.figure(figsize=(10, 5))
+        plt.plot(dates, pensions, 'b-o', linewidth=2)
+               
+        plt.xlabel('Месяцы 2018 года (ось OX)', fontsize=12)
+        plt.ylabel('Пенсия, руб. (ось OY)', fontsize=12)
+        plt.title('Изменение пенсии в Забайкальском крае за 2018 год', fontsize=14)
+        plt.grid(True, alpha=0.3)
+        plt.legend()
+        plt.tight_layout()
+        plt.show()
+
+except Exception as e:
+    print(f"Ошибка: {e}")
